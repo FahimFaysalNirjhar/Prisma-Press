@@ -3,6 +3,7 @@ import HttpStatus from "http-status";
 
 import { userService } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
+import { sendResponse } from "../../utils/sendResponse";
 
 // const registerUser = async () => {
 //   try {
@@ -25,7 +26,14 @@ const registerUser = catchAsync(
 
     const user = await userService.registerUserIntoDB(payload);
 
-    res.status(HttpStatus.CREATED).json({
+    // res.status(HttpStatus.CREATED).json({
+    //
+    //
+    //
+    //  ,
+    // });
+
+    sendResponse(res, {
       success: true,
       statusCode: HttpStatus.CREATED,
       message: "User registered successfully",

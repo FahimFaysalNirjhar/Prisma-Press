@@ -17,15 +17,24 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
     Number(config.bcrypt_salt_rounds),
   );
   const createdUser = await prisma.user.create({
-    data: { name, email, password: hashedPassword },
-  });
-
-  await prisma.profile.create({
     data: {
-      userId: createdUser.id,
-      profilePhoto,
+      name,
+      email,
+      password: hashedPassword,
+      profile: {
+        create: {
+          profilePhoto,
+        },
+      },
     },
   });
+
+  //   await prisma.profile.create({
+  //     data: {
+  //       userId: createdUser.id,
+  //       profilePhoto,
+  //     },
+  //   });
 
   const user = await prisma.user.findUnique({
     where: { id: createdUser.id, email: createdUser.email },

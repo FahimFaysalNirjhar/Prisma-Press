@@ -5,7 +5,7 @@ import config from "./config";
 
 import { prisma } from "./lib/prisma";
 import bcrypt from "bcryptjs";
-import { userRouter } from "./modules/users/user.router";
+import { userRouter } from "./modules/users/user.route";
 
 const app: Application = express();
 

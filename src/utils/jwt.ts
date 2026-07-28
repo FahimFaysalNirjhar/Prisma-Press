@@ -10,4 +10,14 @@ const createToken = (
   return token;
 };
 
-export const jwtUtils = { createToken };
+const verifyToken = (token: string, secret: string) => {
+  try {
+    const verifiedToken = jwt.verify(token, secret);
+    return verifiedToken;
+  } catch (error: any) {
+    console.log("Token verificatin failed", error);
+    throw new Error(error.message);
+  }
+};
+
+export const jwtUtils = { createToken, verifyToken };

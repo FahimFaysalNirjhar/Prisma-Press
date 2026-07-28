@@ -12,6 +12,11 @@ const loginUserIntoDB = async (payload: ILogingUser) => {
       email,
     },
   });
+
+  if (user.activeStatus === "BLOCKED") {
+    throw new Error("Your account has been blocked. Please contact support");
+  }
+
   const isPasswordMatched = await bcrypt.compare(password, user.password);
   if (!isPasswordMatched) {
     throw new Error("Password is incorrect");
@@ -21,6 +26,7 @@ const loginUserIntoDB = async (payload: ILogingUser) => {
     id: user?.id,
     email: user?.email,
     name: user?.name,
+    role: user?.role,
   };
 
   // const accessToken = jwt.sign(jwtPayload, config.jwt_access_secret, {

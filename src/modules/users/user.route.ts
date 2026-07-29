@@ -7,14 +7,6 @@ const router = Router();
 
 router.post("/register", userController.registerUser);
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: { email: string; name: string; id: string; role: Role };
-    }
-  }
-}
-
 router.get(
   "/me",
   auth(Role.ADMIN, Role.AUTHOR, Role.USER),

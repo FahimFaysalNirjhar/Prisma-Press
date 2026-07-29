@@ -9,4 +9,7 @@ router.post(
   auth(Role.ADMIN, Role.AUTHOR, Role.USER),
   postController.createPost,
 );
+
+router.get("/", postController.getAllPosts);
+
 export const postRouter = router;

@@ -14,10 +14,23 @@ const createPost = catchAsync(
     sendResponse(res, {
       success: true,
       statusCode: HttpStatus.CREATED,
-      message: "Post created successfully",
+      message: "Post Created Successfully",
       data: result,
     });
   },
 );
 
-export const postController = { createPost };
+const getAllPosts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await postService.getAllPostsFromDB();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Posts Retrived Successfully",
+      data: result,
+    });
+  },
+);
+
+export const postController = { createPost, getAllPosts };

@@ -6,6 +6,14 @@ import config from "../../config";
 import { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../../lib/prisma";
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { email: string; name: string; id: string; role: Role };
+    }
+  }
+}
+
 export const auth = (...requiredRoles: Role[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.accessToken

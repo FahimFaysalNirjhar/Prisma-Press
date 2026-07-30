@@ -13,4 +13,6 @@ router.post(
 
 router.get("/author/:authorId", commentController.getCommentByAuthorId);
 
+router.get("/:commentId", commentController.getCommentByCommentId);
+
 export const commentRouter = router;

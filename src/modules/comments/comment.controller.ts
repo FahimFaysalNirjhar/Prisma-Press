@@ -39,7 +39,25 @@ const getCommentByAuthorId = catchAsync(
   },
 );
 
+const getCommentByCommentId = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const commentId = req.params.commentId;
+
+    const result = await commentService.getCommentByIdFromDB(
+      commentId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Comment retrieved successfully.",
+      data: result,
+    });
+  },
+);
+
 export const commentController = {
   createComment,
   getCommentByAuthorId,
+  getCommentByCommentId,
 };

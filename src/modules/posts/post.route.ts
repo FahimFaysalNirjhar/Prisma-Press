@@ -18,4 +18,10 @@ router.get(
 );
 router.get("/:postId", postController.getPostById);
 
+router.patch(
+  "/:postId",
+  auth(Role.ADMIN, Role.AUTHOR, Role.USER),
+  postController.updatePost,
+);
+
 export const postRouter = router;

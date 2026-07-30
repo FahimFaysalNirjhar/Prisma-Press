@@ -22,4 +22,22 @@ const createCommentIntoDB = async (
   return result;
 };
 
-export const commentService = { createCommentIntoDB };
+const getCommentByAuthorIdFromDB = async (authorId: string) => {
+  const result = await prisma.comment.findMany({
+    where: { authorId },
+    include: {
+      author: {
+        omit: { password: true },
+      },
+      post: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return result;
+};
+
+export const commentService = {
+  createCommentIntoDB,
+  getCommentByAuthorIdFromDB,
+};

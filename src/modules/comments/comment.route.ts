@@ -11,4 +11,6 @@ router.post(
   commentController.createComment,
 );
 
+router.get("/author/:authorId", commentController.getCommentByAuthorId);
+
 export const commentRouter = router;

@@ -102,10 +102,33 @@ const moderateCommentIntoDB = async (
   return result;
 };
 
+const deleteCommentFromDB = async (
+  commentId: string,
+  authorId: string,
+  isAdmin: boolean,
+) => {
+  const comment = await prisma.comment.findUniqueOrThrow({
+    where: { id: commentId },
+  });
+
+  if (!comment) {
+    throw new Error("Comment not found.");
+  }
+
+  if (!isAdmin && comment.authorId !== authorId) {
+    throw new Error("You are not authorized to update this comment.");
+  }
+
+  await prisma.comment.delete({
+    where: { id: commentId },
+  });
+};
+
 export const commentService = {
   createCommentIntoDB,
   getCommentByAuthorIdFromDB,
   getCommentByIdFromDB,
   updateCommentIntoDB,
   moderateCommentIntoDB,
+  deleteCommentFromDB,
 };

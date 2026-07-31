@@ -79,9 +79,31 @@ const updateComment = catchAsync(
   },
 );
 
+const moderateComment = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const commentId = req.params.commentId;
+    const payload = req.body;
+
+    console.log(req.user?.role);
+
+    const result = await commentService.moderateCommentIntoDB(
+      payload,
+      commentId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Comment moderated successfully.",
+      data: result,
+    });
+  },
+);
+
 export const commentController = {
   createComment,
   getCommentByAuthorId,
   getCommentByCommentId,
   updateComment,
+  moderateComment,
 };

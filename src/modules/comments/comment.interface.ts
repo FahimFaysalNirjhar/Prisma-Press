@@ -8,3 +8,7 @@ export interface ICreateComment {
 export interface IUpdateComment {
   content?: string;
 }
+
+export interface IModerateComment {
+  status: CommentStatus;
+}

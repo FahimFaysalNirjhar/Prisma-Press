@@ -1,5 +1,9 @@
 import { prisma } from "../../lib/prisma";
-import { ICreateComment, IUpdateComment } from "./comment.interface";
+import {
+  ICreateComment,
+  IModerateComment,
+  IUpdateComment,
+} from "./comment.interface";
 
 const createCommentIntoDB = async (
   payload: ICreateComment,
@@ -80,9 +84,28 @@ const updateCommentIntoDB = async (
   return result;
 };
 
+const moderateCommentIntoDB = async (
+  payload: IModerateComment,
+  commentId: string,
+) => {
+  const result = await prisma.comment.update({
+    where: { id: commentId },
+    data: {
+      status: payload.status,
+    },
+    include: {
+      author: { omit: { password: true } },
+      post: true,
+    },
+  });
+
+  return result;
+};
+
 export const commentService = {
   createCommentIntoDB,
   getCommentByAuthorIdFromDB,
   getCommentByIdFromDB,
   updateCommentIntoDB,
+  moderateCommentIntoDB,
 };

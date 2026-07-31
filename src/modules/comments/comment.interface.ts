@@ -7,5 +7,4 @@ export interface ICreateComment {
 
 export interface IUpdateComment {
   content?: string;
-  status?: CommentStatus;
 }

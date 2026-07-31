@@ -70,7 +70,7 @@ const updateCommentIntoDB = async (
 
   const result = await prisma.comment.update({
     where: { id: commentId },
-    data: payload,
+    data: { content: payload.content },
     include: {
       author: { omit: { password: true } },
       post: true,

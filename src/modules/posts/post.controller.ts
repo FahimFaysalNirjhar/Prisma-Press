@@ -109,6 +109,19 @@ const deletePost = catchAsync(
   },
 );
 
+const getPostsStats = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await postService.getPostsStatsFromDB();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Dashboard statistics retrieved successfully.",
+      data: result,
+    });
+  },
+);
+
 export const postController = {
   createPost,
   getAllPosts,
@@ -116,4 +129,5 @@ export const postController = {
   getMyPosts,
   updatePost,
   deletePost,
+  getPostsStats,
 };

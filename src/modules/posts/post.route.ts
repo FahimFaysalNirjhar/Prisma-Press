@@ -21,6 +21,7 @@ router.get(
   postController.getMyPosts,
 );
 
+router.get("/stats", auth(Role.ADMIN), postController.getPostsStats);
 router.get("/:postId", postController.getPostById);
 
 // Update

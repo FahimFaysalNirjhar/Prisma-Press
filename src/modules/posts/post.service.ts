@@ -1,3 +1,4 @@
+import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreatePost, IUpdatePostPayload } from "./post.interface";
 
@@ -25,24 +26,47 @@ const getAllPostsFromDB = async () => {
 };
 
 const getPostByIDFromDB = async (postId: string) => {
-  const post = await prisma.post.findUniqueOrThrow({
-    where: { id: postId },
-  });
+  // const post = await prisma.post.findUniqueOrThrow({
+  //   where: { id: postId },
+  // });
 
-  const updatedPost = await prisma.post.update({
-    where: { id: postId },
-    data: {
-      views: { increment: 1 },
-    },
-    include: {
-      author: {
-        omit: { password: true },
+  // const updatedPost = await prisma.post.update({
+  //   where: { id: postId },
+  //   data: {
+  //     views: { increment: 1 },
+  //   },
+  //   include: {
+  //     author: {
+  //       omit: { password: true },
+  //     },
+  //     comments: true,
+  //   },
+  // });
+
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: { id: postId },
+      data: {
+        views: { increment: 1 },
       },
-      comments: true,
-    },
+      include: {
+        author: {
+          omit: { password: true },
+        },
+        comments: true,
+      },
+    });
+
+    // throw new Error("Fake Error");
+
+    const post = await tx.post.findUniqueOrThrow({
+      where: { id: postId },
+    });
+
+    return post;
   });
 
-  return updatedPost;
+  return transactionResult;
 };
 
 const getMyPostsFromDB = async (authorId: string) => {
@@ -100,6 +124,94 @@ const deletePostFromDB = async (
   await prisma.post.delete({ where: { id: postId } });
 };
 
+const getPostsStatsFromDB = async () => {
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    // const totalPost = await tx.post.count();
+    // const totalPublishedPost = await tx.post.count({
+    //   where: { status: PostStatus.PUBLISHED },
+    // });
+    // const totalDraftPost = await tx.post.count({
+    //   where: { status: PostStatus.DRAFT },
+    // });
+    // const totalArchivedPost = await tx.post.count({
+    //   where: { status: PostStatus.ARCHIVED },
+    // });
+    // const totalComments = await tx.comment.count();
+    // const totalApprovedComments = await tx.comment.count({
+    //   where: { status: CommentStatus.APPROVED },
+    // });
+    // const totalRejectComments = await tx.comment.count({
+    //   where: { status: CommentStatus.REJECT },
+    // });
+
+    // const totalPostViews = await tx.post.aggregate({ _sum: { views: true } });
+
+    const [
+      totalPost,
+      totalPublishedPost,
+      totalDraftPost,
+      totalArchivedPost,
+      totalComments,
+      totalApprovedComments,
+      totalRejectedComments,
+      totalPostViewsAggeregate,
+    ] = await Promise.all([
+      tx.post.count(),
+
+      tx.post.count({
+        where: {
+          status: PostStatus.PUBLISHED,
+        },
+      }),
+
+      tx.post.count({
+        where: {
+          status: PostStatus.DRAFT,
+        },
+      }),
+
+      tx.post.count({
+        where: {
+          status: PostStatus.ARCHIVED,
+        },
+      }),
+
+      tx.comment.count(),
+
+      tx.comment.count({
+        where: {
+          status: CommentStatus.APPROVED,
+        },
+      }),
+
+      tx.comment.count({
+        where: {
+          status: CommentStatus.REJECT,
+        },
+      }),
+
+      tx.post.aggregate({
+        _sum: {
+          views: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalPost,
+      totalPublishedPost,
+      totalDraftPost,
+      totalArchivedPost,
+      totalComments,
+      totalApprovedComments,
+      totalRejectedComments,
+      totalPostViews: totalPostViewsAggeregate._sum.views,
+    };
+  });
+
+  return transactionResult;
+};
+
 export const postService = {
   createPostIntoDB,
   getAllPostsFromDB,
@@ -107,4 +219,5 @@ export const postService = {
   getMyPostsFromDB,
   updatePostIntoDB,
   deletePostFromDB,
+  getPostsStatsFromDB,
 };

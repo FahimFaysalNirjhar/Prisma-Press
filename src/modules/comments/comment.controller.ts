@@ -60,13 +60,11 @@ const updateComment = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const commentId = req.params.commentId;
     const authorId = req.user?.id;
-    const isAdmin = req.user?.role === "ADMIN";
     const payload = req.body;
 
     const result = await commentService.updateCommentIntoDB(
       commentId as string,
       authorId as string,
-      isAdmin,
       payload,
     );
 
@@ -84,7 +82,7 @@ const moderateComment = catchAsync(
     const commentId = req.params.commentId;
     const payload = req.body;
 
-    console.log(req.user?.role);
+    console.log(payload);
 
     const result = await commentService.moderateCommentIntoDB(
       payload,

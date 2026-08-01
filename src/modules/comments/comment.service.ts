@@ -30,10 +30,15 @@ const getCommentByAuthorIdFromDB = async (authorId: string) => {
   const result = await prisma.comment.findMany({
     where: { authorId },
     include: {
-      author: {
-        omit: { password: true },
+      // author: {
+      //   omit: { password: true },
+      // },
+      post: {
+        select: {
+          id: true,
+          title: true,
+        },
       },
-      post: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -45,10 +50,16 @@ const getCommentByIdFromDB = async (commentId: string) => {
   const result = await prisma.comment.findUniqueOrThrow({
     where: { id: commentId },
     include: {
-      author: {
-        omit: { password: true },
+      // author: {
+      //   omit: { password: true },
+      // },
+      post: {
+        select: {
+          id: true,
+          title: true,
+          views: true,
+        },
       },
-      post: true,
     },
   });
   return result;
@@ -57,23 +68,25 @@ const getCommentByIdFromDB = async (commentId: string) => {
 const updateCommentIntoDB = async (
   commentId: string,
   authorId: string,
-  isAdmin: boolean,
   payload: IUpdateComment,
 ) => {
   const comment = await prisma.comment.findUniqueOrThrow({
     where: { id: commentId },
+    // select: {
+    //   id: true,
+    // },
   });
 
-  if (!comment) {
-    throw new Error("Comment not found.");
-  }
+  // if (!comment) {
+  //   throw new Error("Comment not found.");
+  // }
 
-  if (!isAdmin && comment.authorId !== authorId) {
+  if (comment.authorId !== authorId) {
     throw new Error("You are not authorized to update this comment.");
   }
 
   const result = await prisma.comment.update({
-    where: { id: commentId },
+    where: { id: comment.id },
     data: { content: payload.content },
     include: {
       author: { omit: { password: true } },
@@ -88,14 +101,27 @@ const moderateCommentIntoDB = async (
   payload: IModerateComment,
   commentId: string,
 ) => {
-  const result = await prisma.comment.update({
+  const commentData = await prisma.comment.findUniqueOrThrow({
     where: { id: commentId },
+    select: {
+      id: true,
+      status: true,
+    },
+  });
+
+  console.log(commentData.status);
+  console.log(payload.status);
+
+  if (commentData.status === payload.status) {
+    throw new Error(
+      `Your provided status ${payload.status} is already up to date`,
+    );
+  }
+
+  const result = await prisma.comment.update({
+    where: { id: commentData.id },
     data: {
       status: payload.status,
-    },
-    include: {
-      author: { omit: { password: true } },
-      post: true,
     },
   });
 
@@ -108,19 +134,22 @@ const deleteCommentFromDB = async (
   isAdmin: boolean,
 ) => {
   const comment = await prisma.comment.findUniqueOrThrow({
-    where: { id: commentId },
+    where: { id: commentId, authorId },
+    select: {
+      id: true,
+    },
   });
 
-  if (!comment) {
-    throw new Error("Comment not found.");
-  }
+  // if (!comment) {
+  //   throw new Error("Comment not found.");
+  // }
 
-  if (!isAdmin && comment.authorId !== authorId) {
-    throw new Error("You are not authorized to update this comment.");
-  }
+  // if (!isAdmin && comment.authorId !== authorId) {
+  //   throw new Error("You are not authorized to delete this comment.");
+  // }
 
   await prisma.comment.delete({
-    where: { id: commentId },
+    where: { id: comment.id },
   });
 };
 

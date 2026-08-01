@@ -6,12 +6,14 @@ export const catchAsync = (fn: RequestHandler) => {
     try {
       await fn(req, res, next);
     } catch (error) {
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-        success: false,
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: "Faild to register user",
-        error: (error as Error).message,
-      });
+      // res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+      //   success: false,
+      //   statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+      //   message: "Faild to register user",
+      //   error: (error as Error).message,
+      // });
+
+      next(error);
     }
   };
 };

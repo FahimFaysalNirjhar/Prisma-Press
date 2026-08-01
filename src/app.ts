@@ -9,6 +9,8 @@ import { userRouter } from "./modules/users/user.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { postRouter } from "./modules/posts/post.route";
 import { commentRouter } from "./modules/comments/comment.route";
+import { notFound } from "./modules/middlewares/notFound";
+import { globalErrorHandler } from "./modules/middlewares/globalErrorHandler";
 
 const app: Application = express();
 
@@ -33,4 +35,7 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
+
+app.use(notFound);
+app.use(globalErrorHandler);
 export default app;

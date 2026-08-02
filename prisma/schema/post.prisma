@@ -12,6 +12,7 @@ model Post {
   comments   Comment[]
   authorId   String
   author     User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  isPermium  Boolean    @default(false)
 
   @@index([authorId])
   @@map("posts")

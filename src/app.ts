@@ -11,6 +11,7 @@ import { postRouter } from "./modules/posts/post.route";
 import { commentRouter } from "./modules/comments/comment.route";
 import { notFound } from "./modules/middlewares/notFound";
 import { globalErrorHandler } from "./modules/middlewares/globalErrorHandler";
+import { subscriptionRouter } from "./modules/subscription/subscription.route";
 
 const app: Application = express();
 
@@ -35,6 +36,7 @@ app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/posts", postRouter);
 app.use("/api/comments", commentRouter);
+app.use("/api/subscription", subscriptionRouter);
 
 app.use(notFound);
 app.use(globalErrorHandler);

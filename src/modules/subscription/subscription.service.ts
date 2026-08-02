@@ -1,6 +1,12 @@
+import Stripe from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
+import { SubscriptionStatus } from "../../../generated/prisma/enums";
+import {
+  handleChangeSubscription,
+  handleCheckoutCompleted,
+} from "./subscription.utils";
 
 const generateCheckoutSession = async (userId: string) => {
   const transactionResult = await prisma.$transaction(async (tx) => {
@@ -51,54 +57,22 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
   switch (event.type) {
     case "checkout.session.completed":
       //   const paymentIntent = event.data.object;
-      console.log(event.data.object);
-      const session = event.data.object;
-      const userId = session.metadata?.userId;
-      const stripeCustomerId = session.customer as string;
-      const stripeSubscriptionId = session.subscription as string;
+      //   console.log(event.data.object);
 
-      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
-        throw new Error("Webhook Failed");
-      }
-
-      const stripeSubscription =
-        await stripe.subscriptions.retrieve(stripeSubscriptionId);
-
-      console.log("sub info:", stripeSubscription.items.data[0]);
-
-      const currentPeriodEndInMiLLSeconds =
-        stripeSubscription.items.data[0]?.current_period_end!;
-
-      const currentPeriodEnd = new Date(currentPeriodEndInMiLLSeconds * 1000);
-      console.log(currentPeriodEnd);
-
-      await prisma.subscription.upsert({
-        where: { userId },
-        create: {
-          userId,
-          currentPeriodEnd,
-          status: "ACTIVE",
-          stripeCustomerId,
-          stripeSubscriptionId,
-        },
-        update: {
-          userId,
-          currentPeriodEnd,
-          status: "ACTIVE",
-          stripeCustomerId,
-          stripeSubscriptionId,
-        },
-      });
+      await handleCheckoutCompleted(event.data.object);
 
       break;
     case "customer.subscription.updated":
-      const paymentMethod = event.data.object;
+      //   const paymentMethod = event.data.object;
+
+      await handleChangeSubscription(event.data.object);
 
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
       break;
 
     case "customer.subscription.deleted":
+      await handleChangeSubscription(event.data.object);
       break;
     default:
       // Unexpected event type
@@ -106,5 +80,7 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
       break;
   }
 };
+
+// test command stripe subscriptions cancel subcriptionId
 
 export const subscriptionService = { generateCheckoutSession, handleWebhook };

@@ -40,4 +40,33 @@ const generateCheckoutSession = async (userId: string) => {
   return { paymentUrl: transactionResult };
 };
 
-export const subscriptionService = { generateCheckoutSession };
+const handleWebhook = async (payload: Buffer, signature: string) => {
+  const endpointSecret = config.stripe_webhook_secret;
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    endpointSecret as string,
+  );
+
+  switch (event.type) {
+    case "checkout.session.completed":
+      //   const paymentIntent = event.data.object;
+      console.log(event.data.object);
+
+      break;
+    case "customer.subscription.updated":
+      const paymentMethod = event.data.object;
+      // Then define and call a method to handle the successful attachment of a PaymentMethod.
+      // handlePaymentMethodAttached(paymentMethod);
+      break;
+
+    case "customer.subscription.deleted":
+      break;
+    default:
+      // Unexpected event type
+      console.log(`No events matched. Unhandled event type ${event.type}.`);
+      break;
+  }
+};
+
+export const subscriptionService = { generateCheckoutSession, handleWebhook };

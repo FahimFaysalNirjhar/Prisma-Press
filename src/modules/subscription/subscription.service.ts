@@ -52,10 +52,48 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
     case "checkout.session.completed":
       //   const paymentIntent = event.data.object;
       console.log(event.data.object);
+      const session = event.data.object;
+      const userId = session.metadata?.userId;
+      const stripeCustomerId = session.customer as string;
+      const stripeSubscriptionId = session.subscription as string;
+
+      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
+        throw new Error("Webhook Failed");
+      }
+
+      const stripeSubscription =
+        await stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+      console.log("sub info:", stripeSubscription.items.data[0]);
+
+      const currentPeriodEndInMiLLSeconds =
+        stripeSubscription.items.data[0]?.current_period_end!;
+
+      const currentPeriodEnd = new Date(currentPeriodEndInMiLLSeconds * 1000);
+      console.log(currentPeriodEnd);
+
+      await prisma.subscription.upsert({
+        where: { userId },
+        create: {
+          userId,
+          currentPeriodEnd,
+          status: "ACTIVE",
+          stripeCustomerId,
+          stripeSubscriptionId,
+        },
+        update: {
+          userId,
+          currentPeriodEnd,
+          status: "ACTIVE",
+          stripeCustomerId,
+          stripeSubscriptionId,
+        },
+      });
 
       break;
     case "customer.subscription.updated":
       const paymentMethod = event.data.object;
+
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
       break;

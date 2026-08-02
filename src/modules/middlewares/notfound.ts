@@ -4,6 +4,6 @@ export const notFound = (req: Request, res: Response) => {
   res.status(404).json({
     message: "Route not found",
     path: req.originalUrl,
-    data: Date(),
+    data: new Date(),
   });
 };

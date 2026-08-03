@@ -3,8 +3,20 @@ import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import { ICreatePost, IPostQuery, IUpdatePostPayload } from "./post.interface";
 import { PostWhereInput } from "../../../generated/prisma/models";
+import { subscribe } from "node:diagnostics_channel";
 
 const createPostIntoDB = async (payload: ICreatePost, userId: string) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    include: { subscription: true },
+  });
+
+  if (payload.isPermium && user.subscription?.status !== "ACTIVE") {
+    throw new Error(
+      "You are not a premium user. You can not create premium post",
+    );
+  }
+
   const result = await prisma.post.create({
     data: {
       ...payload,
@@ -69,6 +81,10 @@ const getAllPostsFromDB = async (query: IPostQuery) => {
   if (query.tags) {
     andConditions.push({ tags: { hasSome: tagsArray } });
   }
+
+  andConditions.push({
+    isPermium: false,
+  });
 
   const posts = await prisma.post.findMany({
     // where: {
@@ -140,7 +156,7 @@ const getPostByIDFromDB = async (postId: string) => {
     // throw new Error("Fake Error");
 
     const post = await tx.post.findUniqueOrThrow({
-      where: { id: postId },
+      where: { id: postId, isPermium: false },
     });
 
     return post;

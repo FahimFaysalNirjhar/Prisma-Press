@@ -6,6 +6,7 @@ export interface ICreatePost {
   content: string;
   thumbnail?: string;
   isFeatured?: boolean;
+  isPermium?: boolean;
   status?: PostStatus;
   tags: string[];
 }

@@ -22,6 +22,8 @@ export const auth = (...requiredRoles: Role[]) => {
         ? req.headers.authorization?.split(" ")[1]
         : req.headers.authorization;
 
+    console.log("token:", token);
+
     if (!token) {
       throw new Error(
         "You are not logged in. Please log in to access this resource.",

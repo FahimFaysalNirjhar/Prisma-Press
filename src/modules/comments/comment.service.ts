@@ -46,23 +46,23 @@ const getCommentByAuthorIdFromDB = async (authorId: string) => {
   return result;
 };
 
-const getCommentByIdFromDB = async (commentId: string) => {
-  const result = await prisma.comment.findUniqueOrThrow({
-    where: { id: commentId },
-    include: {
-      // author: {
-      //   omit: { password: true },
-      // },
-      post: {
-        select: {
-          id: true,
-          title: true,
-          views: true,
-        },
-      },
-    },
+const getCommentByPostIdFromDB = async (postId: string) => {
+  const comment = await prisma.comment.findMany({
+    where: { postId },
+    // include: {
+    //   // author: {
+    //   //   omit: { password: true },
+    //   // },
+    //   post: {
+    //     select: {
+    //       id: true,
+    //       title: true,
+    //       views: true,
+    //     },
+    //   },
+    // },
   });
-  return result;
+  return comment;
 };
 
 const updateCommentIntoDB = async (
@@ -156,7 +156,7 @@ const deleteCommentFromDB = async (
 export const commentService = {
   createCommentIntoDB,
   getCommentByAuthorIdFromDB,
-  getCommentByIdFromDB,
+  getCommentByPostIdFromDB,
   updateCommentIntoDB,
   moderateCommentIntoDB,
   deleteCommentFromDB,

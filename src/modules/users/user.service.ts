@@ -4,7 +4,7 @@ import config from "../../config";
 import { RegisterUserPayload } from "./user.interface";
 
 const registerUserIntoDB = async (payload: RegisterUserPayload) => {
-  const { name, email, password, profilePhoto } = payload;
+  const { name, email, password, profilePhoto, role } = payload;
   const isUserExist = await prisma.user.findUnique({
     where: { email },
   });
@@ -26,6 +26,7 @@ const registerUserIntoDB = async (payload: RegisterUserPayload) => {
           profilePhoto,
         },
       },
+      role,
     },
   });
 

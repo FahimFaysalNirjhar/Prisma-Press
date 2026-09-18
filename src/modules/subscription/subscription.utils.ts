@@ -40,8 +40,8 @@ export const handleCheckoutCompleted = async (
   const stripeSubscription =
     await stripe.subscriptions.retrieve(stripeSubscriptionId);
 
-  console.log("Stripe Subscription ID:", stripeSubscription.id);
-  console.log("Stripe Subscription Status:", stripeSubscription.status);
+  console.log("Stripe subscription:", stripeSubscription.id);
+  console.log("Stripe status:", stripeSubscription.status);
 
   const currentPeriodEnd = getPeriodEnd(stripeSubscription);
 
@@ -55,6 +55,7 @@ export const handleCheckoutCompleted = async (
       stripeSubscriptionId,
     },
     update: {
+      userId,
       currentPeriodEnd,
       status: SubscriptionStatus.ACTIVE,
       stripeCustomerId,

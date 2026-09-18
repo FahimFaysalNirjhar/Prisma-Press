@@ -6,16 +6,32 @@ import { SubscriptionStatus } from "../../../generated/prisma/enums";
 export const subscriptionGuard = () => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
+
+    console.log("User ID:", userId);
+
+    if (!userId) {
+      throw new Error("User not authenticated");
+    }
+
     const subscription = await prisma.subscription.findUnique({
       where: { userId },
     });
 
+    console.log("Subscription:", subscription);
+
     if (!subscription) {
-      throw new Error("Please subscribe  to get access premium contents");
+      throw new Error("Please subscribe to get access to premium content");
     }
-    if (subscription?.status !== SubscriptionStatus.ACTIVE) {
-      throw new Error("Please subscribe again to get access premium contents");
+
+    const isActive =
+      subscription.status === SubscriptionStatus.ACTIVE &&
+      subscription.currentPeriodEnd &&
+      new Date(subscription.currentPeriodEnd) > new Date();
+
+    if (!isActive) {
+      throw new Error("Your subscription has expired");
     }
+
     next();
   });
 };

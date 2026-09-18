@@ -28,15 +28,37 @@ const generateCheckoutSession = async (userId: string) => {
   const session = await stripe.checkout.sessions.create({
     mode: "subscription",
     customer: stripeCustomerId,
-    line_items: [{ price: config.stripe_product_price_id, quantity: 1 }],
+    line_items: [
+      {
+        price: config.stripe_product_price_id,
+        quantity: 1,
+      },
+    ],
     payment_method_types: ["card"],
     success_url: `${config.app_url}/premium?success=true`,
     cancel_url: `${config.app_url}/payment?success=false`,
-    metadata: { userId: user.id },
-    subscription_data: { metadata: { userId: user.id } },
+    metadata: {
+      userId: user.id,
+    },
+    subscription_data: {
+      metadata: {
+        userId: user.id,
+      },
+    },
   });
 
-  return { paymentUrl: session.url };
+  console.log("========== CHECKOUT SESSION CREATED ==========");
+  console.log("User ID:", user.id);
+  console.log("Stripe Customer ID:", stripeCustomerId);
+  console.log("Session ID:", session.id);
+  console.log("Session Metadata:", session.metadata);
+  console.log("Session Customer:", session.customer);
+  console.log("Session Subscription:", session.subscription);
+  console.log("Payment URL:", session.url);
+
+  return {
+    paymentUrl: session.url,
+  };
 };
 
 const handleWebhook = async (payload: Buffer, signature: string) => {

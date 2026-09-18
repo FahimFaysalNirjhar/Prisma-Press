@@ -3,17 +3,17 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import config from "./config";
 
-import { prisma } from "./lib/prisma";
-import bcrypt from "bcryptjs";
 import { userRouter } from "./modules/users/user.route";
 import { authRouter } from "./modules/auth/auth.route";
 import { postRouter } from "./modules/posts/post.route";
 import { commentRouter } from "./modules/comments/comment.route";
-import { notFound } from "./modules/middlewares/notFound";
+
 import { globalErrorHandler } from "./modules/middlewares/globalErrorHandler";
 import { subscriptionRouter } from "./modules/subscription/subscription.route";
-import { stripe } from "./lib/stripe";
+
 import { premiumRouter } from "./modules/premium/premium.route";
+import { notFound } from "./modules/middlewares/notfound";
+import { subscriptionController } from "./modules/subscription/subscription.controller";
 
 const app: Application = express();
 
@@ -23,8 +23,6 @@ app.use(
     credentials: true,
   }),
 );
-
-const endpointSecret = config.stripe_webhook_secret;
 
 // app.post(
 //   "/api/subscription/webhook",
@@ -80,7 +78,11 @@ const endpointSecret = config.stripe_webhook_secret;
 //   },
 // );
 
-app.use("/api/subscription/webhook", express.raw({ type: "application/json" }));
+app.post(
+  "/api/subscription/webhook",
+  express.raw({ type: "application/json" }),
+  subscriptionController.handleWebhook,
+);
 
 app.use(express.json());
 

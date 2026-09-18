@@ -9,41 +9,34 @@ import {
 } from "./subscription.utils";
 
 const generateCheckoutSession = async (userId: string) => {
-  const transactionResult = await prisma.$transaction(async (tx) => {
-    const user = await prisma.user.findUniqueOrThrow({
-      where: { id: userId },
-      include: { subscription: true },
-    });
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    include: { subscription: true },
+  });
 
-    let stripeCustomerId = user.subscription?.stripeCustomerId;
+  let stripeCustomerId = user.subscription?.stripeCustomerId;
 
-    if (!stripeCustomerId) {
-      const customer = await stripe.customers.create({
-        email: user?.email,
-        name: user?.name,
-        metadata: { userId: user?.id },
-      });
-      stripeCustomerId = customer.id;
-    }
-
-    const session = await stripe.checkout.sessions.create({
-      line_items: [
-        {
-          price: config.stripe_product_price_id,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      customer: stripeCustomerId,
-      payment_method_types: ["card"],
-      success_url: `${config.app_url}/premium?success=true`,
-      cancel_url: `${config.app_url}/payment?success=false`,
+  if (!stripeCustomerId) {
+    const customer = await stripe.customers.create({
+      email: user.email,
+      name: user.name,
       metadata: { userId: user.id },
     });
+    stripeCustomerId = customer.id;
+  }
 
-    return session.url;
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: stripeCustomerId,
+    line_items: [{ price: config.stripe_product_price_id, quantity: 1 }],
+    payment_method_types: ["card"],
+    success_url: `${config.app_url}/premium?success=true`,
+    cancel_url: `${config.app_url}/payment?success=false`,
+    metadata: { userId: user.id },
+    subscription_data: { metadata: { userId: user.id } },
   });
-  return { paymentUrl: transactionResult };
+
+  return { paymentUrl: session.url };
 };
 
 const handleWebhook = async (payload: Buffer, signature: string) => {
@@ -53,6 +46,14 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
     signature,
     endpointSecret as string,
   );
+
+  console.log("Webhook secret exists:", !!config.stripe_webhook_secret);
+  console.log(
+    "Webhook secret prefix:",
+    config.stripe_webhook_secret?.slice(0, 10),
+  );
+  console.log("Signature prefix:", signature?.slice(0, 20));
+  console.log("Payload is Buffer:", Buffer.isBuffer(payload));
 
   switch (event.type) {
     case "checkout.session.completed":
@@ -82,18 +83,29 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 };
 
 const getSubscriptionStatus = async (userId: string) => {
-  const isSubscriptionExist = await prisma.subscription.findUniqueOrThrow({
+  const subscription = await prisma.subscription.findUnique({
     where: { userId },
   });
-  const isActive =
-    isSubscriptionExist.status === "ACTIVE" &&
-    isSubscriptionExist.currentPeriodEnd &&
-    new Date(isSubscriptionExist.currentPeriodEnd) > new Date();
+
+  // Must come before any subscription.status access
+  if (!subscription) {
+    return {
+      status: null,
+      isSubscribed: false,
+      currentPeriodEnd: null,
+    };
+  }
+
+  const isActive = Boolean(
+    subscription.status === "ACTIVE" &&
+    subscription.currentPeriodEnd &&
+    new Date(subscription.currentPeriodEnd) > new Date(),
+  );
 
   return {
-    status: isSubscriptionExist.status,
+    status: subscription.status,
     isSubscribed: isActive,
-    currentPeriodEnd: isSubscriptionExist.currentPeriodEnd,
+    currentPeriodEnd: subscription.currentPeriodEnd,
   };
 };
 // test command stripe subscriptions cancel subcriptionId

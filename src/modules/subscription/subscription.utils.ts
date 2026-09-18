@@ -14,17 +14,34 @@ export const getPeriodEnd = (payload: Stripe.Subscription) => {
 export const handleCheckoutCompleted = async (
   session: Stripe.Checkout.Session,
 ) => {
+  console.log("========== CHECKOUT COMPLETED ==========");
+  console.log("Session ID:", session.id);
+  console.log("Metadata:", session.metadata);
+  console.log("Customer:", session.customer);
+  console.log("Subscription:", session.subscription);
+
   const userId = session.metadata?.userId;
-  const stripeCustomerId = session.customer as string;
-  const stripeSubscriptionId = session.subscription as string;
+
+  const stripeCustomerId =
+    typeof session.customer === "string"
+      ? session.customer
+      : session.customer?.id;
+
+  const stripeSubscriptionId =
+    typeof session.subscription === "string"
+      ? session.subscription
+      : session.subscription?.id;
 
   if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
-    console.log("Webhook: Missing values for creating checkout session");
+    console.log("Webhook: Missing values for creating subscription");
     return;
   }
 
   const stripeSubscription =
     await stripe.subscriptions.retrieve(stripeSubscriptionId);
+
+  console.log("Stripe Subscription ID:", stripeSubscription.id);
+  console.log("Stripe Subscription Status:", stripeSubscription.status);
 
   const currentPeriodEnd = getPeriodEnd(stripeSubscription);
 
@@ -33,18 +50,19 @@ export const handleCheckoutCompleted = async (
     create: {
       userId,
       currentPeriodEnd,
-      status: "ACTIVE",
+      status: SubscriptionStatus.ACTIVE,
       stripeCustomerId,
       stripeSubscriptionId,
     },
     update: {
-      userId,
       currentPeriodEnd,
-      status: "ACTIVE",
+      status: SubscriptionStatus.ACTIVE,
       stripeCustomerId,
       stripeSubscriptionId,
     },
   });
+
+  console.log("✅ Subscription saved successfully");
 };
 
 export const handleChangeSubscription = async (

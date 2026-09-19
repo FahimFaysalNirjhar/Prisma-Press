@@ -19,7 +19,7 @@ const createCheckOutSession = catchAsync(
   },
 );
 
-const handleWebhook = catchAsync(async (req: Request, res: Response) => {
+const handleWebhook = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
   const signature = req.get("stripe-signature");
 
   console.log("🔥 Stripe webhook received");

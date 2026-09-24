@@ -19,4 +19,25 @@ const getPremiumContent = catchAsync(
   },
 );
 
-export const premiumController = { getPremiumContent };
+const getPremiumPostById = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const postId = req.params.postId;
+
+    if (!postId) {
+      throw new Error("Post Id Required In Params");
+    }
+
+    const result = await premiumService.getPremiumPostByIdFromDB(
+      postId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Post Retrived Successfully",
+      data: result,
+    });
+  },
+);
+
+export const premiumController = { getPremiumContent, getPremiumPostById };

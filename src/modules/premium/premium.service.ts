@@ -89,4 +89,28 @@ const getPremiumContent = async (query: IPostQuery) => {
   };
 };
 
-export const premiumService = { getPremiumContent };
+const getPremiumPostByIdFromDB = async (postId: string) => {
+  const transactionResult = await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: { id: postId },
+      data: {
+        views: { increment: 1 },
+      },
+      include: {
+        author: {
+          omit: {
+            password: true,
+          },
+        },
+      },
+    });
+
+    const post = await tx.post.findUniqueOrThrow({
+      where: { id: postId, isPermium: true },
+    });
+    return post;
+  });
+  return transactionResult;
+};
+
+export const premiumService = { getPremiumContent, getPremiumPostByIdFromDB };

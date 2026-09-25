@@ -41,7 +41,7 @@ const getCommentByAuthorId = catchAsync(
 
 const getCommentByPostId = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const postId = req.params.commentId;
+    const postId = req.params.postId;
 
     const result = await commentService.getCommentByPostIdFromDB(
       postId as string,

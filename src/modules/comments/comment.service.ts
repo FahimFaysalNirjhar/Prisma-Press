@@ -49,18 +49,18 @@ const getCommentByAuthorIdFromDB = async (authorId: string) => {
 const getCommentByPostIdFromDB = async (postId: string) => {
   const comment = await prisma.comment.findMany({
     where: { postId },
-    // include: {
-    //   // author: {
-    //   //   omit: { password: true },
-    //   // },
-    //   post: {
-    //     select: {
-    //       id: true,
-    //       title: true,
-    //       views: true,
-    //     },
-    //   },
-    // },
+    include: {
+      author: {
+        omit: { password: true },
+      },
+      post: {
+        select: {
+          id: true,
+          title: true,
+          views: true,
+        },
+      },
+    },
   });
   return comment;
 };

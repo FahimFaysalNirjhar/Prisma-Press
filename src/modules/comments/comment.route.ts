@@ -13,6 +13,11 @@ router.post(
 
 router.get("/", auth(Role.ADMIN), commentController.getAllComments);
 
+router.get(
+  "/my-comments", // ← add this, before "/:postId"
+  auth(Role.ADMIN, Role.AUTHOR, Role.USER),
+  commentController.getMyComments,
+);
 router.get("/author/:authorId", commentController.getCommentByAuthorId);
 
 router.get("/:postId", commentController.getCommentByPostId);

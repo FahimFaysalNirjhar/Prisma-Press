@@ -135,6 +135,22 @@ const getAllComments = catchAsync(
   },
 );
 
+const getMyComments = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const authorId = req.user?.id;
+    const result = await commentService.getCommentByAuthorIdFromDB(
+      authorId as string,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Your comments retrieved successfully.",
+      data: result,
+    });
+  },
+);
+
 export const commentController = {
   createComment,
   getCommentByAuthorId,
@@ -143,4 +159,5 @@ export const commentController = {
   moderateComment,
   deleteComment,
   getAllComments,
+  getMyComments,
 };

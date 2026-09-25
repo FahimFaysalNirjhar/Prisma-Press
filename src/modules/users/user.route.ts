@@ -19,4 +19,16 @@ router.put(
   userController.updateMyProfile,
 );
 
+router.post(
+  "/author-requests", // ← still missing the leading slash in your pasted code, fixed here
+  auth(Role.USER),
+  userController.createAuthorRequest,
+);
+
+router.get(
+  "/author-requests/me",
+  auth(Role.USER),
+  userController.getMyAuthorRequest,
+);
+
 export const userRouter = router;

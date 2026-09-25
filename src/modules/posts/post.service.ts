@@ -257,6 +257,8 @@ const getPostsStatsFromDB = async () => {
     const [
       totalPost,
       totalPublishedPost,
+      totalPremium,
+      totalFeatured,
       totalDraftPost,
       totalArchivedPost,
       totalComments,
@@ -269,6 +271,18 @@ const getPostsStatsFromDB = async () => {
       tx.post.count({
         where: {
           status: PostStatus.PUBLISHED,
+        },
+      }),
+
+      tx.post.count({
+        where: {
+          isPermium: true,
+        },
+      }),
+
+      tx.post.count({
+        where: {
+          isFeatured: true,
         },
       }),
 
@@ -308,6 +322,8 @@ const getPostsStatsFromDB = async () => {
     return {
       totalPost,
       totalPublishedPost,
+      totalPremium,
+      totalFeatured,
       totalDraftPost,
       totalArchivedPost,
       totalComments,

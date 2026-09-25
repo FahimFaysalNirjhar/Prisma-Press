@@ -25,3 +25,9 @@ enum SubscriptionStatus {
   CANCELED
   EXPIRED
 }
+
+enum AuthorRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}

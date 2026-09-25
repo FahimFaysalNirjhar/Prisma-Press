@@ -1,0 +1,9 @@
+model AuthorRequest {
+  id         String              @id @default(uuid())
+  userId     String              @unique
+  user       User                @relation(fields: [userId], references: [id])
+  bio        String? // optional: why they want to be an author
+  status     AuthorRequestStatus @default(PENDING)
+  createdAt  DateTime            @default(now())
+  reviewedAt DateTime?
+}

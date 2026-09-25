@@ -93,4 +93,44 @@ const updateMyProfile = catchAsync(
   },
 );
 
-export const userController = { registerUser, getMyProfile, updateMyProfile };
+const createAuthorRequest = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id as string;
+    const { bio } = req.body;
+
+    const authorRequest = await userService.createAuthorRequestIntoDB(
+      userId,
+      bio,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.CREATED,
+      message: "Author request submitted successfully",
+      data: { authorRequest },
+    });
+  },
+);
+
+const getMyAuthorRequest = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.user?.id as string;
+
+    const authorRequest = await userService.getMyAuthorRequestFromDB(userId);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Author request fetched successfully",
+      data: { authorRequest },
+    });
+  },
+);
+
+export const userController = {
+  registerUser,
+  getMyProfile,
+  updateMyProfile,
+  createAuthorRequest,
+  getMyAuthorRequest,
+};

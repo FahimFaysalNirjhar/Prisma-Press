@@ -81,8 +81,46 @@ const updateMyProfileInDB = async (userId: string, payload: any) => {
   return updatedUser;
 };
 
+const createAuthorRequestIntoDB = async (userId: string, bio?: string) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+  });
+
+  if (user.role !== "USER") {
+    throw new Error("You're already an author or admin.");
+  }
+
+  const existingRequest = await prisma.authorRequest.findUnique({
+    where: { userId },
+  });
+
+  if (existingRequest?.status === "PENDING") {
+    throw new Error("You already have a pending author request.");
+  }
+
+  // Allow re-applying after a rejection
+  if (existingRequest) {
+    return prisma.authorRequest.update({
+      where: { userId },
+      data: { bio, status: "PENDING", reviewedAt: null },
+    });
+  }
+
+  return prisma.authorRequest.create({
+    data: { userId, bio, status: "PENDING" },
+  });
+};
+
+const getMyAuthorRequestFromDB = async (userId: string) => {
+  return prisma.authorRequest.findUnique({
+    where: { userId },
+  });
+};
+
 export const userService = {
   registerUserIntoDB,
   getMyProfileFromDB,
   updateMyProfileInDB,
+  createAuthorRequestIntoDB,
+  getMyAuthorRequestFromDB,
 };

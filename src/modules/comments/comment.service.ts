@@ -134,20 +134,21 @@ const deleteCommentFromDB = async (
   authorId: string,
   isAdmin: boolean,
 ) => {
-  const comment = await prisma.comment.findUniqueOrThrow({
-    where: { id: commentId, authorId },
+  const comment = await prisma.comment.findUnique({
+    where: { id: commentId },
     select: {
       id: true,
+      authorId: true,
     },
   });
 
-  // if (!comment) {
-  //   throw new Error("Comment not found.");
-  // }
+  if (!comment) {
+    throw new Error("Comment not found.");
+  }
 
-  // if (!isAdmin && comment.authorId !== authorId) {
-  //   throw new Error("You are not authorized to delete this comment.");
-  // }
+  if (!isAdmin && comment.authorId !== authorId) {
+    throw new Error("You are not authorized to delete this comment.");
+  }
 
   await prisma.comment.delete({
     where: { id: comment.id },

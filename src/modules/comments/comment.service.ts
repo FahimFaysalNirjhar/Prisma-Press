@@ -1,3 +1,4 @@
+import { CommentStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
 import {
   ICreateComment,
@@ -153,6 +154,23 @@ const deleteCommentFromDB = async (
   });
 };
 
+const getAllComments = async (status?: string) => {
+  return prisma.comment.findMany({
+    where: status ? { status: status as CommentStatus } : undefined,
+    include: {
+      author: {
+        omit: {
+          password: true,
+        },
+      },
+      post: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
 export const commentService = {
   createCommentIntoDB,
   getCommentByAuthorIdFromDB,
@@ -160,4 +178,5 @@ export const commentService = {
   updateCommentIntoDB,
   moderateCommentIntoDB,
   deleteCommentFromDB,
+  getAllComments,
 };

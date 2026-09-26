@@ -336,6 +336,20 @@ const getPostsStatsFromDB = async () => {
   return transactionResult;
 };
 
+const getAllPostsForAdminFromDB = async () => {
+  const posts = await prisma.post.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      author: {
+        omit: { password: true },
+      },
+      _count: { select: { comments: true } },
+    },
+  });
+
+  return posts;
+};
+
 export const postService = {
   createPostIntoDB,
   getAllPostsFromDB,
@@ -344,4 +358,5 @@ export const postService = {
   updatePostIntoDB,
   deletePostFromDB,
   getPostsStatsFromDB,
+  getAllPostsForAdminFromDB,
 };

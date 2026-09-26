@@ -3,6 +3,7 @@ import { catchAsync } from "../../utils/catchAsync";
 import { postService } from "./post.service";
 import { sendResponse } from "../../utils/sendResponse";
 import HttpStatus from "http-status";
+import { PostStatus } from "../../../generated/prisma/enums";
 
 const createPost = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -125,6 +126,19 @@ const getPostsStats = catchAsync(
   },
 );
 
+const getAllPostsForAdmin = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const posts = await postService.getAllPostsForAdminFromDB();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "All posts retrieved successfully.",
+      data: posts,
+    });
+  },
+);
+
 export const postController = {
   createPost,
   getAllPosts,
@@ -133,4 +147,5 @@ export const postController = {
   updatePost,
   deletePost,
   getPostsStats,
+  getAllPostsForAdmin,
 };

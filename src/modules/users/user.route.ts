@@ -43,4 +43,6 @@ router.patch(
   userController.reviewAuthorRequest,
 );
 
+router.get("/", auth(Role.ADMIN), userController.getAllUsers);
+
 export const userRouter = router;

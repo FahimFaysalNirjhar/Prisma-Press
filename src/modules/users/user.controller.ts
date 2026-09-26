@@ -159,6 +159,24 @@ const reviewAuthorRequest = catchAsync(
   },
 );
 
+const getAllUsers = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { role, searchTerm } = req.query;
+
+    const users = await userService.getAllUsersFromDB({
+      role: role as string | undefined,
+      searchTerm: searchTerm as string | undefined,
+    });
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Users fetched successfully",
+      data: { users },
+    });
+  },
+);
+
 export const userController = {
   registerUser,
   getMyProfile,
@@ -167,4 +185,5 @@ export const userController = {
   getMyAuthorRequest,
   getAllAuthorRequests,
   reviewAuthorRequest,
+  getAllUsers,
 };

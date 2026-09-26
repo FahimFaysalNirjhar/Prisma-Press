@@ -171,6 +171,32 @@ const reviewAuthorRequestInDB = async (
   return updatedRequest;
 };
 
+const getAllUsersFromDB = async (filters?: {
+  role?: string;
+  searchTerm?: string;
+}) => {
+  const { role, searchTerm } = filters ?? {};
+
+  const users = await prisma.user.findMany({
+    where: {
+      ...(role ? { role: role as any } : {}),
+      ...(searchTerm
+        ? {
+            OR: [
+              { name: { contains: searchTerm, mode: "insensitive" } },
+              { email: { contains: searchTerm, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    omit: { password: true },
+    include: { profile: true },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return users;
+};
+
 export const userService = {
   registerUserIntoDB,
   getMyProfileFromDB,
@@ -179,4 +205,5 @@ export const userService = {
   getMyAuthorRequestFromDB,
   getAllAuthorRequestsFromDB,
   reviewAuthorRequestInDB,
+  getAllUsersFromDB,
 };

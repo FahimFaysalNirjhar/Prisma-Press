@@ -21,6 +21,12 @@ router.get(
   postController.getMyPosts,
 );
 
+router.get(
+  "/admin/all",
+  auth(Role.ADMIN),
+  postController.getAllPostsForAdmin, // ← includes premium, no filters
+);
+
 router.get("/stats", auth(Role.ADMIN), postController.getPostsStats);
 
 router.get("/:postId", postController.getPostById);

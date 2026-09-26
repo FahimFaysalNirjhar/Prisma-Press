@@ -31,4 +31,16 @@ router.get(
   userController.getMyAuthorRequest,
 );
 
+router.get(
+  "/author-requests",
+  auth(Role.ADMIN),
+  userController.getAllAuthorRequests,
+);
+
+router.patch(
+  "/author-requests/:id",
+  auth(Role.ADMIN),
+  userController.reviewAuthorRequest,
+);
+
 export const userRouter = router;

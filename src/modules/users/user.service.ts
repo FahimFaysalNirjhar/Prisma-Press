@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "../../lib/prisma";
 import config from "../../config";
 import { RegisterUserPayload } from "./user.interface";
+import { AuthorRequestStatus } from "../../../generated/prisma/enums";
 
 const registerUserIntoDB = async (payload: RegisterUserPayload) => {
   const { name, email, password, profilePhoto, role } = payload;
@@ -117,10 +118,65 @@ const getMyAuthorRequestFromDB = async (userId: string) => {
   });
 };
 
+const getAllAuthorRequestsFromDB = async (status?: string) => {
+  const validStatus =
+    status &&
+    Object.values(AuthorRequestStatus).includes(status as AuthorRequestStatus)
+      ? (status as AuthorRequestStatus)
+      : undefined;
+
+  const authorRequests = await prisma.authorRequest.findMany({
+    where: validStatus ? { status: validStatus } : undefined,
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return authorRequests;
+};
+
+const reviewAuthorRequestInDB = async (
+  requestId: string,
+  status: "APPROVED" | "REJECTED",
+) => {
+  const existingRequest = await prisma.authorRequest.findUnique({
+    where: { id: requestId },
+  });
+
+  if (!existingRequest) {
+    throw new Error("Author request not found");
+  }
+
+  if (existingRequest.status !== "PENDING") {
+    throw new Error("This request has already been reviewed");
+  }
+
+  const updatedRequest = await prisma.$transaction(async (tx) => {
+    const request = await tx.authorRequest.update({
+      where: { id: requestId },
+      data: { status, reviewedAt: new Date() },
+    });
+
+    if (status === "APPROVED") {
+      await tx.user.update({
+        where: { id: existingRequest.userId },
+        data: { role: "AUTHOR" },
+      });
+    }
+
+    return request;
+  });
+
+  return updatedRequest;
+};
+
 export const userService = {
   registerUserIntoDB,
   getMyProfileFromDB,
   updateMyProfileInDB,
   createAuthorRequestIntoDB,
   getMyAuthorRequestFromDB,
+  getAllAuthorRequestsFromDB,
+  reviewAuthorRequestInDB,
 };

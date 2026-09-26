@@ -1,12 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import HttpStatus from "http-status";
-
 import { userService } from "./user.service";
 import { catchAsync } from "../../utils/catchAsync";
 import { sendResponse } from "../../utils/sendResponse";
-import jwt from "jsonwebtoken";
-import config from "../../config";
-import { jwtUtils } from "../../utils/jwt";
 
 // const registerUser = async () => {
 //   try {
@@ -127,10 +123,48 @@ const getMyAuthorRequest = catchAsync(
   },
 );
 
+const getAllAuthorRequests = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { status } = req.query;
+
+    const authorRequests = await userService.getAllAuthorRequestsFromDB(
+      status as string | undefined,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: "Author requests fetched successfully",
+      data: { authorRequests },
+    });
+  },
+);
+
+const reviewAuthorRequest = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+    const { status } = req.body; // "APPROVED" | "REJECTED"
+
+    const authorRequest = await userService.reviewAuthorRequestInDB(
+      id as string,
+      status,
+    );
+
+    sendResponse(res, {
+      success: true,
+      statusCode: HttpStatus.OK,
+      message: `Author request ${status.toLowerCase()} successfully`,
+      data: { authorRequest },
+    });
+  },
+);
+
 export const userController = {
   registerUser,
   getMyProfile,
   updateMyProfile,
   createAuthorRequest,
   getMyAuthorRequest,
+  getAllAuthorRequests,
+  reviewAuthorRequest,
 };

@@ -8,9 +8,12 @@ async function main() {
   try {
     await prisma.$connect();
     console.log("Connected to the database successfully");
-    app.listen(port, () => {
-      console.log(`Server is running on port ${port}`);
-    });
+
+    if (config.node_env !== "production") {
+      app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
+      });
+    }
   } catch (error) {
     console.error("Error Starting the server", error);
     await prisma.$disconnect();
